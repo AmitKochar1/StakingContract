@@ -12,7 +12,7 @@ contract Token is IERC20 {
 
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) approved;
-    //event Transfer(address indexed _from, address indexed _to, uint256 _value);
+    event Transfer(address indexed _from, address indexed _to, uint256 _value);
     event Approved(
         address indexed _owner,
         address indexed _spender,
