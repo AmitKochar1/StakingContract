@@ -22,29 +22,28 @@ contract('Staking', ([deployer, investor, investor1, investor2]) => {
 
         //token to farm
 
-        let amount = tokens('10000')
-        await nativeToken.transfer(staking.address, amount, { from: deployer })
+        //let amount = tokens('10000')
+        await nativeToken.transfer(staking.address, tokens('15000'), { from: deployer })
 
         // tokens to investors
-        amount = tokens('1000')
-        await nativeToken.transfer(investor, amount, { from: deployer })
-        await nativeToken.transfer(investor1, amount, { from: deployer })
-        await nativeToken.transfer(investor2, amount, { from: deployer })
+        await nativeToken.transfer(investor, tokens('10000'), { from: deployer })
+        await nativeToken.transfer(investor1, tokens('8000'), { from: deployer })
+        await nativeToken.transfer(investor2, tokens('5000'), { from: deployer })
     })
     // token deployment
     describe("Deployment", () => {
         it('Tracks the name', async () => {
-            const result = await token.name()
+            const result = await nativeToken.name()
             result.should.equal(name)
         })
 
         it('Tracks the symbol', async () => {
-            const result = await token.symbol()
+            const result = await nativeToken.symbol()
             result.should.equal(symbol)
         })
 
         it('Tracks the decimals', async () => {
-            const result = await token.decimals()
+            const result = await nativeToken.decimals()
             result.toString().should.equal(decimals)
         })
 
@@ -56,22 +55,39 @@ contract('Staking', ([deployer, investor, investor1, investor2]) => {
 
     //staking coins by the investors
 
-    describe('investors staking coins', () => {
-        it('investor staking', async () => {
-            let amount = '500'
-            const result = await staking.stake(amount, { from: investor })
-            result.toString().should.equal(amount.toString())
-        })
-        it('investor1 staking', async () => {
-            let amount = '600'
-            const result = await staking.stake(amount, { from: investor1 })
-            result.toString().should.equal(amount.toString())
-        })
-        it('investor2 staking', async () => {
-            let amount = '700'
-            const result = await staking.stake(amount, { from: investor2 })
-            result.toString().should.equal(amount.toString())
+    describe('Checking the balance of investor', () => {
+        let result
+        /*it('investor balance', async () => {
+            //let result
+            result = await nativeToken.balanceOf(investor)
+            assert.equal(result.toString(), tokens('10000'), 'Balance is correct before staking')
+        })*/
+
+        it('investor balance', async () => {
+            result = await nativeToken.balanceOf(investor)
+            result.toString().should.equal(tokens('10000').toString())
         })
 
+        it('investor1 balance', async () => {
+            result = await nativeToken.balanceOf(investor1)
+            result.toString().should.equal(tokens('8000').toString())
+        })
+        it('investor2 balance', async () => {
+            result = await nativeToken.balanceOf(investor2)
+            result.toString().should.equal(tokens('5000').toString())
+        })
+
+    })
+
+    describe('Approving tokens', () => {
+        let result
+
+        it('investor 1 approving his contract', async () => {
+            //let address
+            result = await nativeToken.approve(staking.address, tokens('10000'), { from: investor })
+            //result.should.equal(tokens('10000').toString())
+            result = await nativeToken.approve(staking.address, tokens('80000'), { from: investor1 })
+            result = await nativeToken.approve(staking.address, tokens('50000'), { from: investor2 })
+        })
     })
 })
