@@ -47,10 +47,10 @@ contract('Staking', ([deployer, investor, investor1, investor2]) => {
             result.toString().should.equal(decimals)
         })
 
-        /*it("Tracks total Supply", async () => {
-            const result = await token.totalSupply()
-            result.toString().should.equal(totalSupply.toString())
-        })*/
+        //it("Tracks total Supply", async () => {
+        //const result = await token.totalSupply()
+        // result.toString().should.equal(totalSupply.toString())
+        //})
     })
 
     //staking coins by the investors
@@ -76,18 +76,25 @@ contract('Staking', ([deployer, investor, investor1, investor2]) => {
             result = await nativeToken.balanceOf(investor2)
             result.toString().should.equal(tokens('5000').toString())
         })
-
     })
 
-    describe('Approving tokens', () => {
+
+    describe('Approving and staking tokens', () => {
         let result
 
-        it('investor 1 approving his contract', async () => {
-            //let address
-            result = await nativeToken.approve(staking.address, tokens('10000'), { from: investor })
+        it('investor0 approving contract and staking', async () => {
+            let S
+            result = await nativeToken.approve(staking.address, tokens('10000').toString(), { from: investor })
             //result.should.equal(tokens('10000').toString())
-            result = await nativeToken.approve(staking.address, tokens('80000'), { from: investor1 })
-            result = await nativeToken.approve(staking.address, tokens('50000'), { from: investor2 })
+            await staking.stake(tokens('10000'), { from: investor })
+        })
+        it('investor 1 approving contract and staking', async () => {
+            await nativeToken.approve(staking.address, tokens('8000'), { from: investor1 })
+            await staking.stake(tokens('8000'), { from: investor1 })
+        })
+        it('investor 2 approving contract and staking', async () => {
+            await nativeToken.approve(staking.address, tokens('5000'), { from: investor2 })
+            await staking.stake(tokens('5000'), { from: investor2 })
         })
     })
 })
