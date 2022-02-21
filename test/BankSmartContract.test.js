@@ -7,13 +7,13 @@ const Staking = artifacts.require('./BankSmartContract')
 require('chai')
     .use(require('chai-as-promised'))
     .should()
+    .assert()
 
 contract('Staking', ([deployer, investor, investor1, investor2]) => {
     const name = "Earth"
     const symbol = "ERTH"
     const decimals = '18'
-    //const totalSupply = tokens(1000000).toString()
-
+    //const totalSupply = tokens(1000000).toString() 
     let nativeToken, staking
 
     beforeEach(async () => {
@@ -31,52 +31,22 @@ contract('Staking', ([deployer, investor, investor1, investor2]) => {
         await nativeToken.transfer(investor2, tokens(5000), { from: deployer })
     })
     // token deployment
-    /*describe("Deployment", () => {
-        it('Tracks the name', async () => {
-            const result = await nativeToken.name()
+    describe("Deployment", () => {
+        let result
+        it('Tracks the name, sysmbol and decimals', async () => {
+            result = await nativeToken.name()
             result.should.equal(name)
-        })
+            console.log('Token name is ' + result)
 
-        it('Tracks the symbol', async () => {
-            const result = await nativeToken.symbol()
+            result = await nativeToken.symbol()
             result.should.equal(symbol)
-        })
+            console.log('Token symbol is ' + result)
 
-        it('Tracks the decimals', async () => {
-            const result = await nativeToken.decimals()
+            result = await nativeToken.decimals()
             result.toString().should.equal(decimals)
+            console.log('Decimals are ' + result.toString())
         })
-
-        //it("Tracks total Supply", async () => {
-        //const result = await token.totalSupply()
-        // result.toString().should.equal(totalSupply.toString())
-        //})
-    })*/
-
-    //staking coins by the investors
-
-    /*describe('Checking the balance of investor', () => {
-        let result*/
-    /*it('investor balance', async () => {
-        //let result
-        result = await nativeToken.balanceOf(investor)
-        assert.equal(result.toString(), tokens('10000'), 'Balance is correct before staking')
-    })*/
-
-    /*it('investor balance', async () => {
-        result = await nativeToken.balanceOf(investor)
-        result.toString().should.equal(tokens('10000').toString())
     })
-
-    it('investor1 balance', async () => {
-        result = await nativeToken.balanceOf(investor1)
-        result.toString().should.equal(tokens('8000').toString())
-    })
-    it('investor2 balance', async () => {
-        result = await nativeToken.balanceOf(investor2)
-        result.toString().should.equal(tokens('5000').toString())
-    })
-})*/
 
 
     describe('Balance after / before, Approving and staking tokens', () => {
@@ -87,6 +57,15 @@ contract('Staking', ([deployer, investor, investor1, investor2]) => {
             result = await nativeToken.balanceOf(investor)
             console.log('Investor 0 balance before staking ' + result.toString())
             result.toString().should.equal(tokens(10000).toString())
+
+            //Investor 1 Balance
+            result = await nativeToken.balanceOf(investor1)
+            console.log('Investor 1 balance before staking ' + result.toString())
+            result.toString().should.equal(tokens(8000).toString())
+
+            result = await nativeToken.balanceOf(investor2)
+            console.log('Investor 2 balance before staking ' + result.toString())
+            result.toString().should.equal(tokens(5000).toString())
         })
 
         it('investors approving contract and staking', async () => {
