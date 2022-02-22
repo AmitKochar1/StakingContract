@@ -11,8 +11,8 @@ contract Token is IERC20 {
     uint256 public totalSupply;
 
     mapping(address => uint256) public balanceOf;
-    mapping(address => mapping(address => uint256)) approved;
-    //event Transfer(address indexed _from, address indexed _to, uint256 _value);
+    mapping(address => mapping(address => uint256)) public approved;
+    //mapping(address => bool) public isApproved;
     event Approved(
         address indexed _owner,
         address indexed _spender,
@@ -41,6 +41,7 @@ contract Token is IERC20 {
         returns (bool success)
     {
         approved[msg.sender][_spender] = _value;
+        //isApproved[_spender] = true;
         emit Approved(msg.sender, _spender, _value);
         return true;
     }

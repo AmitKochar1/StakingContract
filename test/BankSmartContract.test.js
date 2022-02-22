@@ -7,7 +7,6 @@ const Staking = artifacts.require('./BankSmartContract')
 require('chai')
     .use(require('chai-as-promised'))
     .should()
-    .assert()
 
 contract('Staking', ([deployer, investor, investor1, investor2]) => {
     const name = "Earth"
@@ -69,20 +68,22 @@ contract('Staking', ([deployer, investor, investor1, investor2]) => {
         })
 
         it('investors approving contract and staking', async () => {
+
             // Investor 0 approving and Staking
             await nativeToken.approve(staking.address, tokens(10000), { from: investor })
-
-            //result.should.equal(bool, true)
+            result = await nativeToken.approved(investor, staking.address, { from: investor })
+            console.log('Investor 0 has approved ' + result.toString())
+            /*result = await nativeToken.isApproved(staking.address, { from: investor })
+            console.log(result)*/
             await staking.stake(tokens(9000), { from: investor })
             result = await staking.balanceOf(investor)
             console.log('Investor 0 staking balance ' + result.toString())
             result.toString().should.equal(tokens(9000).toString())
-            result = await staking.isApproved(investor)
-            console.log(result)
-            // /\result.should.equal('true')
 
             // Investor 1 approving and Staking
             await nativeToken.approve(staking.address, tokens(8000), { from: investor1 })
+            result = await nativeToken.approved(investor1, staking.address, { from: investor1 })
+            console.log('Investor 1 has approved ' + result.toString())
             await staking.stake(tokens(7000), { from: investor1 })
             result = await staking.balanceOf(investor1)
             console.log('Investor 1 staking balance ' + result.toString())
@@ -90,6 +91,8 @@ contract('Staking', ([deployer, investor, investor1, investor2]) => {
 
             // Investor 2 approving and Staking
             await nativeToken.approve(staking.address, tokens(5000), { from: investor2 })
+            result = await nativeToken.approved(investor2, staking.address, { from: investor2 })
+            console.log('Investor 2 has approved ' + result.toString())
             await staking.stake(tokens(4000), { from: investor2 })
             result = await staking.balanceOf(investor2)
             console.log('Investor 2 staking balance ' + result.toString())

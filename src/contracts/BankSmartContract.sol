@@ -16,9 +16,12 @@ contract BankSmartContract {
     uint256 public time;
     uint256 public totalStake;
     uint256 public amount;
+
     //Balances of the users -
     mapping(address => uint256) public balanceOf;
     mapping(address => bool) public isStaking;
+    //mapping(address => bool) approved;
+    address[] public hasApproved;
     mapping(address => bool) public isApproved;
     mapping(address => uint256) public rewardBalance;
     mapping(address => uint256) public stakeTime;
@@ -35,13 +38,20 @@ contract BankSmartContract {
         //totalStake += amount;
     }
 
+    /*function _addApprover(address _approver) public {
+        isApproved[_approver] = true;
+    }*/
+
     //stake function
     function stake(uint256 _amount) public payable {
         require(_amount > 0, "amount should be bigger than 0");
 
-        if (isApproved[msg.sender] == false) {
+        /*if (isApproved[msg.sender] = false) {
             token.approve(address(this), _amount);
-        }
+            hasApproved.push(msg.sender);
+            isApproved[msg.sender] = true;
+        }*/
+
         token.transferFrom(msg.sender, address(this), _amount);
         //update the user's balance
         isApproved[msg.sender] == true;
@@ -50,7 +60,7 @@ contract BankSmartContract {
         stakeTime[msg.sender] = block.timestamp;
         totalStake += amount;
 
-        //emit to notify the chanhe onto blockchain
+        //emit to notify the change onto blockchain
         emit Stake(msg.sender, _amount);
     }
 
