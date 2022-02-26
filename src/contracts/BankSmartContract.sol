@@ -16,14 +16,21 @@ contract BankSmartContract {
     uint256 public time;
     uint256 public totalStake;
     uint256 public amount;
+    uint256 public rewardOnePool;
+    uint256 private duration = 60 seconds;
+    uint256 private poolOneTime = 86400 seconds; // Reward can be claimed after 1 day.
+    uint256 private pooltwoTime = 172800 seconds; // Reward can be claimed after 2 days.
+    uint256 private totalStakedTime;
 
     //Balances of the users -
     mapping(address => uint256) public balanceOf;
     mapping(address => bool) public isStaking;
     //mapping(address => bool) approved;
-    address[] public hasApproved;
+    //address[] public hasApproved;
     mapping(address => bool) public isApproved;
-    mapping(address => uint256) public rewardBalance;
+    //mapping(address => uint256) public rewardOnePool;
+    //mapping(address => uint256) public rewardTwoPool;
+    //mapping(address => uint256) public rewardThreePool;
     mapping(address => uint256) public stakeTime;
 
     event Stake(address indexed sender, uint256 amount);
@@ -38,14 +45,11 @@ contract BankSmartContract {
         //totalStake += amount;
     }
 
-    /*function _addApprover(address _approver) public {
-        isApproved[_approver] = true;
-    }*/
-
     //stake function
     function stake(uint256 _amount) public payable {
         require(_amount > 0, "amount should be bigger than 0");
 
+        // this can be used but wont be neccessary, uncomment if you wish to use.
         /*if (isApproved[msg.sender] = false) {
             token.approve(address(this), _amount);
             hasApproved.push(msg.sender);
@@ -77,7 +81,8 @@ contract BankSmartContract {
         emit UnStake(msg.sender, _amount);
     }
 
-    function poolOneReward(address _user) internal view returns (uint256) {
+    //internal view to public for testing
+    function poolOneReward(address _user) public returns (uint256) {
         //pool 1 - Time 1 day
         uint256 percentage = 100;
         uint256 poolWeight = 20;
@@ -85,11 +90,12 @@ contract BankSmartContract {
         uint256 userAllocation = (balanceOf[_user] / (totalStake)) *
             (percentage);
         uint256 rewardOne = (poolOneSupply * (userAllocation)) / (percentage);
+        //rewardOnePool += rewardOne;
         return rewardOne;
     }
 
-    function poolTwoReward(address _user) internal view returns (uint256) {
-        //pool 1 - Time 1 day
+    function poolTwoReward(address _user) public returns (uint256) {
+        //pool 2 - Time 2 day
         uint256 previousReward = poolOneReward(_user);
         uint256 percentage = 100;
         uint256 poolWeight = 30;
@@ -101,8 +107,8 @@ contract BankSmartContract {
         return totalReward;
     }
 
-    function poolThirdReward(address _user) internal view returns (uint256) {
-        //pool 1 - Time 1 day
+    function poolThirdReward(address _user) public returns (uint256) {
+        //pool 3 - Time 3 day
         uint256 previousReward = poolTwoReward(_user);
         uint256 percentage = 100;
         uint256 poolWeight = 50;

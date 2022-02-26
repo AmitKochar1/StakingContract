@@ -41,7 +41,7 @@ contract Token is IERC20 {
         returns (bool success)
     {
         approved[msg.sender][_spender] = _value;
-        //isApproved[_spender] = true;
+        //isApproved[_spender] = true;  no need to add this, it will create extra transaction and more fee.
         emit Approved(msg.sender, _spender, _value);
         return true;
     }
