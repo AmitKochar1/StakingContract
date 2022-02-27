@@ -108,22 +108,14 @@ contract('Staking', ([deployer, investor, investor1, investor2]) => {
             console.log('Investor 2 balance: ' + result.toString())
             result.toString().should.equal(tokens(5000).toString())
         })
-    })
-    describe('Reward ', () => {
-        let result, totalStake
-
-        /*beforeEach(async () => {
-             await staking.stake(tokens(9000), { from: investor })
-             await staking.stake(tokens(7000), { from: investor1 })
-             await staking.stake(tokens(4000), { from: investor2 })
-         })*/
 
         it('Rewards to Investors', async () => {
-            totalStake = tokens(20000)
+            await nativeToken.approve(staking.address, tokens(10000), { from: investor })
             await staking.stake(tokens(9000), { from: investor })
-            //await staking.poolOneReward(investor)
-            result = await staking.rewardOnePool(staking.address, { from: investor })
-            console.log(result.toString())
+            await staking.unStake(tokens(1000), { from: investor })
+            result = await nativeToken.balanceOf(investor)
+            //result = await nativeToken.rewardOnePool(investor)
+            console.log('Investor 0 balance after unstaking 1000 tokens: ' + result.toString())
         })
     })
 })

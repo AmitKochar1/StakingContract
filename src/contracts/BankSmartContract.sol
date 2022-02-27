@@ -16,7 +16,7 @@ contract BankSmartContract {
     uint256 public time;
     uint256 public totalStake;
     uint256 public amount;
-    uint256 public rewardOnePool;
+    //uint256 public rewardOnePool;
     uint256 private duration = 60 seconds;
     uint256 private poolOneTime = 86400 seconds; // Reward can be claimed after 1 day.
     uint256 private pooltwoTime = 172800 seconds; // Reward can be claimed after 2 days.
@@ -28,7 +28,7 @@ contract BankSmartContract {
     //mapping(address => bool) approved;
     //address[] public hasApproved;
     mapping(address => bool) public isApproved;
-    //mapping(address => uint256) public rewardOnePool;
+    mapping(address => uint256) public rewardOnePool;
     //mapping(address => uint256) public rewardTwoPool;
     //mapping(address => uint256) public rewardThreePool;
     mapping(address => uint256) public stakeTime;
@@ -58,9 +58,9 @@ contract BankSmartContract {
 
         token.transferFrom(msg.sender, address(this), _amount);
         //update the user's balance
-        isApproved[msg.sender] == true;
+        isApproved[msg.sender] = true;
         balanceOf[msg.sender] += _amount;
-        isStaking[msg.sender] == true;
+        isStaking[msg.sender] = true;
         stakeTime[msg.sender] = block.timestamp;
         totalStake += amount;
 
@@ -69,12 +69,12 @@ contract BankSmartContract {
     }
 
     function unStake(uint256 _amount) public payable {
-        require(isStaking[msg.sender] == true, "You wish");
+        require(isStaking[msg.sender] = true, "You wish");
         balanceOf[msg.sender] -= _amount;
         if (balanceOf[msg.sender] > 0) {
-            isStaking[msg.sender] == true;
+            isStaking[msg.sender] = true;
         }
-        isStaking[msg.sender] == false;
+        isStaking[msg.sender] = false;
         token.transfer(msg.sender, _amount);
         totalStake -= amount;
 
@@ -90,7 +90,7 @@ contract BankSmartContract {
         uint256 userAllocation = (balanceOf[_user] / (totalStake)) *
             (percentage);
         uint256 rewardOne = (poolOneSupply * (userAllocation)) / (percentage);
-        //rewardOnePool += rewardOne;
+        rewardOnePool[msg.sender] += rewardOne;
         return rewardOne;
     }
 
