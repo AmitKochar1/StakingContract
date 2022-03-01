@@ -113,7 +113,7 @@ contract('Staking', ([deployer, investor, investor1, investor2]) => {
             await nativeToken.approve(staking.address, tokens(10000), { from: investor })
             await staking.stake(tokens(9000), { from: investor })
             await staking.unStake(tokens(1000), { from: investor })
-            result = await nativeToken.balanceOf(investor)
+            result = await staking.balanceOf(investor)
             //result = await nativeToken.rewardOnePool(investor)
             console.log('Investor 0 balance after unstaking 1000 tokens: ' + result.toString())
         })

@@ -14,30 +14,28 @@ contract BankSmartContract {
     uint256 public reward = 1000 * 1e18; // 1000 in rewards - farm supply
     address public owner;
     uint256 public time;
-    uint256 public totalStake;
+    uint256 public totalStakeBalance;
     uint256 public amount;
-    //uint256 public rewardOnePool;
     uint256 private duration = 60 seconds;
     uint256 private poolOneTime = 86400 seconds; // Reward can be claimed after 1 day.
     uint256 private pooltwoTime = 172800 seconds; // Reward can be claimed after 2 days.
     uint256 private totalStakedTime;
 
+    address[] public hasApproved;
+
     //Balances of the users -
-    mapping(address => uint256) public balanceOf;
+    mapping(address => uint256) public StakingbalanceOf;
+    mapping(address => uint256) public rewardBalance;
     mapping(address => bool) public isStaking;
     //mapping(address => bool) approved;
     //address[] public hasApproved;
     mapping(address => bool) public isApproved;
-    mapping(address => uint256) public rewardOnePool;
-    //mapping(address => uint256) public rewardTwoPool;
-    //mapping(address => uint256) public rewardThreePool;
     mapping(address => uint256) public stakeTime;
 
     event Stake(address indexed sender, uint256 amount);
     event UnStake(address indexed sender, uint256 amount);
     Token public token;
 
-    // contructor
     constructor(Token _token) {
         token = _token;
         owner = msg.sender;
@@ -45,24 +43,25 @@ contract BankSmartContract {
         //totalStake += amount;
     }
 
-    //stake function
     function stake(uint256 _amount) public payable {
         require(_amount > 0, "amount should be bigger than 0");
+        require(msg.sender != address(0), "Bank cannot deposit to pool");
 
-        // this can be used but wont be neccessary, uncomment if you wish to use.
-        /*if (isApproved[msg.sender] = false) {
+        //this can be used but wont be neccessary, uncomment if you wish to use.
+        if (isApproved[msg.sender] = false) {
             token.approve(address(this), _amount);
             hasApproved.push(msg.sender);
             isApproved[msg.sender] = true;
-        }*/
+        }
 
         token.transferFrom(msg.sender, address(this), _amount);
+
         //update the user's balance
         isApproved[msg.sender] = true;
-        balanceOf[msg.sender] += _amount;
+        StakingbalanceOf[msg.sender] += _amount;
         isStaking[msg.sender] = true;
         stakeTime[msg.sender] = block.timestamp;
-        totalStake += amount;
+        totalStakeBalance += amount;
 
         //emit to notify the change onto blockchain
         emit Stake(msg.sender, _amount);
@@ -70,51 +69,54 @@ contract BankSmartContract {
 
     function unStake(uint256 _amount) public payable {
         require(isStaking[msg.sender] = true, "You wish");
-        balanceOf[msg.sender] -= _amount;
-        if (balanceOf[msg.sender] > 0) {
+        require(0 < StakingbalanceOf[msg.sender], "No tokens to unstake");
+
+        if (0 < StakingbalanceOf[msg.sender]) {
             isStaking[msg.sender] = true;
         }
         isStaking[msg.sender] = false;
         token.transfer(msg.sender, _amount);
-        totalStake -= amount;
+        totalStakeBalance -= amount;
+
+        //StakingbalanceOf[msg.sender] += rewardOne;
 
         emit UnStake(msg.sender, _amount);
     }
 
     //internal view to public for testing
-    function poolOneReward(address _user) public returns (uint256) {
+    function poolOneReward(address _user) public view returns (uint256) {
         //pool 1 - Time 1 day
         uint256 percentage = 100;
         uint256 poolWeight = 20;
         uint256 poolOneSupply = ((totalStake) * (poolWeight)) / (percentage);
-        uint256 userAllocation = (balanceOf[_user] / (totalStake)) *
-            (percentage);
+        uint256 userAllocation = (StakingbalanceOf[_user] /
+            (totalStakeBalance)) * (percentage);
         uint256 rewardOne = (poolOneSupply * (userAllocation)) / (percentage);
-        rewardOnePool[msg.sender] += rewardOne;
+        //rewardOnePool[msg.sender] += rewardOne;
         return rewardOne;
     }
 
-    function poolTwoReward(address _user) public returns (uint256) {
+    function poolTwoReward(address _user) public view returns (uint256) {
         //pool 2 - Time 2 day
         uint256 previousReward = poolOneReward(_user);
         uint256 percentage = 100;
         uint256 poolWeight = 30;
         uint256 poolTwoSupply = ((totalStake) * (poolWeight)) / (percentage);
-        uint256 userAllocation = (balanceOf[_user] / (totalStake)) *
-            (percentage);
+        uint256 userAllocation = (StakingbalanceOf[_user] /
+            (totalStakeBalance)) * (percentage);
         uint256 rewardTwo = (poolTwoSupply * (userAllocation)) / (percentage);
         uint256 totalReward = rewardTwo + previousReward;
         return totalReward;
     }
 
-    function poolThirdReward(address _user) public returns (uint256) {
+    function poolThirdReward(address _user) public view returns (uint256) {
         //pool 3 - Time 3 day
         uint256 previousReward = poolTwoReward(_user);
         uint256 percentage = 100;
         uint256 poolWeight = 50;
         uint256 poolThirdSupply = ((totalStake) * (poolWeight)) / (percentage);
-        uint256 userAllocation = (balanceOf[_user] / (totalStake)) *
-            (percentage);
+        uint256 userAllocation = (StakingbalanceOf[_user] /
+            (totalStakeBalance)) * (percentage);
         uint256 rewardThird = (poolThirdSupply * (userAllocation)) /
             (percentage);
         uint256 totalReward = rewardThird + previousReward;
