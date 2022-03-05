@@ -88,7 +88,8 @@ contract BankSmartContract {
         //pool 1 - Time 1 day
         uint256 percentage = 100;
         uint256 poolWeight = 20;
-        uint256 poolOneSupply = ((totalStake) * (poolWeight)) / (percentage);
+        uint256 poolOneSupply = ((totalStakeBalance) * (poolWeight)) /
+            (percentage);
         uint256 userAllocation = (StakingbalanceOf[_user] /
             (totalStakeBalance)) * (percentage);
         uint256 rewardOne = (poolOneSupply * (userAllocation)) / (percentage);
@@ -101,7 +102,8 @@ contract BankSmartContract {
         uint256 previousReward = poolOneReward(_user);
         uint256 percentage = 100;
         uint256 poolWeight = 30;
-        uint256 poolTwoSupply = ((totalStake) * (poolWeight)) / (percentage);
+        uint256 poolTwoSupply = ((totalStakeBalance) * (poolWeight)) /
+            (percentage);
         uint256 userAllocation = (StakingbalanceOf[_user] /
             (totalStakeBalance)) * (percentage);
         uint256 rewardTwo = (poolTwoSupply * (userAllocation)) / (percentage);
@@ -114,7 +116,8 @@ contract BankSmartContract {
         uint256 previousReward = poolTwoReward(_user);
         uint256 percentage = 100;
         uint256 poolWeight = 50;
-        uint256 poolThirdSupply = ((totalStake) * (poolWeight)) / (percentage);
+        uint256 poolThirdSupply = ((totalStakeBalance) * (poolWeight)) /
+            (percentage);
         uint256 userAllocation = (StakingbalanceOf[_user] /
             (totalStakeBalance)) * (percentage);
         uint256 rewardThird = (poolThirdSupply * (userAllocation)) /
