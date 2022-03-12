@@ -15,6 +15,9 @@ contract BankSmartContract {
     address public owner;
     uint256 public time;
     uint256 public totalStakeBalance;
+
+    uint256 totalFarmSupply = 10000000000000000000000; //10,000 total supply for Pool
+
     uint256 public amount;
     uint256 private duration = 60 seconds;
     uint256 private poolOneTime = 86400 seconds; // Reward can be claimed after 1 day.
@@ -24,7 +27,7 @@ contract BankSmartContract {
     address[] public hasApproved;
 
     //Balances of the users -
-    mapping(address => uint256) public StakingbalanceOf;
+    mapping(address => uint256) public stakingBalanceOf;
     mapping(address => uint256) public rewardBalance;
     mapping(address => bool) public isStaking;
     //mapping(address => bool) approved;
@@ -63,37 +66,38 @@ contract BankSmartContract {
 
         //update the user's balance
         isApproved[msg.sender] = true;
-        StakingbalanceOf[msg.sender] += _amount;
+        stakingBalanceOf[msg.sender] += _amount;
         isStaking[msg.sender] = true;
         stakeTime[msg.sender] = block.timestamp;
-        totalStakeBalance += amount;
+        totalStakeBalance += stakingBalanceOf[msg.sender];
 
         //emit to notify the change onto blockchain
         emit Stake(msg.sender, _amount);
     }
 
     function unStake(uint256 _amount) public payable {
-        uint256 balance = StakingbalanceOf[msg.sender];
         require(isStaking[msg.sender] = true, "You wish");
         require(0 < balance, "No tokens to unstake");
         uint256 rewards;
-        uint256 amountUnStake;
+        uint256 totalAmount;
 
-        if (totalStakedTime > poolOneTime) {
+        totalStakedTime = block.timestamp - (startTime{msg.sender});
+
+        if (totalStakedTime < poolOneTime) {
             rewards = poolOneReward(msg.sender);
-            amountUnStake = balance + rewards;
-            totalStakeBalance -= balance;
+            totalAmount = stakingBalanceOf[msg.sender] + rewards;
+            totalStakeBalance -= stakingBalanceOf[msg.sender];
         } else if (totalStakedTime > poolTwoTime) {
             rewards = poolTwoReward(msg.sender);
-            amountUnStake = balance + rewards;
+            totalAmount = balance + rewards;
             totalStakeBalance -= balance;
         } else {
             rewards = poolThirdReward(msg.sender);
-            amountUnStake = balance + rewards;
+            totalAmount = balance + rewards;
             totalStakeBalance -= balance;
         }
 
-        if (0 < StakingbalanceOf[msg.sender]) {
+        if (0 < stakingBalanceOf[msg.sender]) {
             isStaking[msg.sender] = true;
         } else {
             isStaking[msg.sender] = false;
@@ -101,7 +105,7 @@ contract BankSmartContract {
             totalStakeBalance -= amount;
         }
 
-        //StakingbalanceOf[msg.sender] += rewardOne;
+        //stakingBalanceOf[msg.sender] += rewardOne;
 
         emit UnStake(msg.sender, _amount);
     }
@@ -111,9 +115,9 @@ contract BankSmartContract {
         //pool 1 - Time 1 day
         uint256 percentage = 100;
         uint256 poolWeight = 20;
-        uint256 poolOneSupply = ((totalStakeBalance) * (poolWeight)) /
+        uint256 poolOneSupply = ((totalFarmSupply) * (poolWeight)) /
             (percentage);
-        uint256 userAllocation = (StakingbalanceOf[_user] /
+        uint256 userAllocation = (stakingBalanceOf[_user] /
             (totalStakeBalance)) * (percentage);
         uint256 rewardOne = (poolOneSupply * (userAllocation)) / (percentage);
         //rewardOnePool[msg.sender] += rewardOne;
@@ -126,9 +130,9 @@ contract BankSmartContract {
         uint256 previousReward = poolOneReward(_user);
         uint256 percentage = 100;
         uint256 poolWeight = 30;
-        uint256 poolTwoSupply = ((totalStakeBalance) * (poolWeight)) /
+        uint256 poolTwoSupply = ((totalFarmSupply) * (poolWeight)) /
             (percentage);
-        uint256 userAllocation = (StakingbalanceOf[_user] /
+        uint256 userAllocation = (stakingBalanceOf[_user] /
             (totalStakeBalance)) * (percentage);
         uint256 rewardTwo = (poolTwoSupply * (userAllocation)) / (percentage);
         uint256 totalReward = rewardTwo + previousReward;
@@ -140,9 +144,9 @@ contract BankSmartContract {
         uint256 previousReward = poolTwoReward(_user);
         uint256 percentage = 100;
         uint256 poolWeight = 50;
-        uint256 poolThirdSupply = ((totalStakeBalance) * (poolWeight)) /
+        uint256 poolThirdSupply = ((totalFarmSupply) * (poolWeight)) /
             (percentage);
-        uint256 userAllocation = (StakingbalanceOf[_user] /
+        uint256 userAllocation = (stakingBalanceOf[_user] /
             (totalStakeBalance)) * (percentage);
         uint256 rewardThird = (poolThirdSupply * (userAllocation)) /
             (percentage);
