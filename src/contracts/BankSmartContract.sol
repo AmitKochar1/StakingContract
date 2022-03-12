@@ -4,36 +4,31 @@ pragma solidity ^0.8.10;
 
 import "./Token.sol";
 
-/* things we need to build the staking system:
-1. Token contract - import from openzeppelin,
-2. Mapping to track the stakeholders, rewards, stakes (staking amount)
-3. A reward system
-*/
-
 contract BankSmartContract {
-    uint256 public reward = 1000 * 1e18; // 1000 in rewards - farm supply
+    uint256 totalFarmSupply = 10000 * 1e18; // 10,000 in rewards - farm supply
     address public owner;
     uint256 public time;
     uint256 public totalStakeBalance;
-
-    uint256 totalFarmSupply = 10000000000000000000000; //10,000 total supply for Pool
-
     uint256 public amount;
+
     uint256 private duration = 60 seconds;
-    uint256 private poolOneTime = 86400 seconds; // Reward can be claimed after 1 day.
-    uint256 private poolTwoTime = 172800 seconds; // Reward can be claimed after 2 days.
+    uint256 private poolOneTime = 86400 seconds; // lock period for pool one.
+    uint256 private poolTwoTime = 172800 seconds; // lock period for pool two.
+    uint256 private poolThirdTime = 259200 seconds; // lock period for pool three;
     uint256 private totalStakedTime;
 
-    address[] public hasApproved;
-
-    //Balances of the users -
     mapping(address => uint256) public stakingBalanceOf;
     mapping(address => uint256) public rewardBalance;
     mapping(address => bool) public isStaking;
-    //mapping(address => bool) approved;
-    //address[] public hasApproved;
+    //mapping(address => bool) hasStaked;
+    address[] public stakers;
+    uint256 stakerCount;
+    mapping(address => uint256) public stakeTime; //start time
+
+    //Approved mapping and array, refer to line 58.
+    /*mapping(address => bool) approved;
     mapping(address => bool) public isApproved;
-    mapping(address => uint256) public stakeTime;
+    address[] public hasApproved;*/
 
     event Stake(address indexed sender, uint256 amount);
     event UnStake(address indexed sender, uint256 amount);
@@ -43,7 +38,6 @@ contract BankSmartContract {
         token = _token;
         owner = msg.sender;
         time = block.timestamp;
-        //totalStake += amount;
     }
 
     modifier checkBalance(uint256 _amount) {
@@ -52,60 +46,64 @@ contract BankSmartContract {
     }
 
     function stake(uint256 _amount) public payable checkBalance(_amount) {
-        //require(_amount > 0, "amount should be bigger than 0");
         require(msg.sender != address(0), "Bank cannot deposit to pool");
 
-        //this can be used but wont be neccessary, uncomment if you wish to use.
-        if (isApproved[msg.sender] = false) {
+        //this can be used but wont be neccessary, uncomment if you wish to use. refer to line 35.
+        /*if (isApproved[msg.sender] = false) {
             token.approve(address(this), _amount);
             hasApproved.push(msg.sender);
             isApproved[msg.sender] = true;
-        }
+        }*/
 
         token.transferFrom(msg.sender, address(this), _amount);
 
         //update the user's balance
-        isApproved[msg.sender] = true;
-        stakingBalanceOf[msg.sender] += _amount;
+        if (!isStaking[msg.sender]) {
+            stakers.push(msg.sender);
+            stakerCount++;
+        }
         isStaking[msg.sender] = true;
+        stakingBalanceOf[msg.sender] += _amount;
         stakeTime[msg.sender] = block.timestamp;
         totalStakeBalance += stakingBalanceOf[msg.sender];
 
-        //emit to notify the change onto blockchain
         emit Stake(msg.sender, _amount);
     }
 
     function unStake(uint256 _amount) public payable {
+        uint256 balance = stakingBalanceOf[msg.sender];
         require(isStaking[msg.sender] = true, "You wish");
         require(0 < balance, "No tokens to unstake");
         uint256 rewards;
         uint256 totalAmount;
 
-        totalStakedTime = block.timestamp - (startTime{msg.sender});
+        totalStakedTime = block.timestamp - stakeTime[msg.sender];
 
-        if (totalStakedTime < poolOneTime) {
+        if (totalStakedTime >= poolOneTime) {
             rewards = poolOneReward(msg.sender);
-            totalAmount = stakingBalanceOf[msg.sender] + rewards;
-            totalStakeBalance -= stakingBalanceOf[msg.sender];
-        } else if (totalStakedTime > poolTwoTime) {
+            totalAmount = balance + rewards;
+            token.transfer(msg.sender, totalAmount);
+            totalFarmSupply -= rewards;
+            totalStakeBalance -= balance;
+            isStaking[msg.sender] = false;
+            stakerCount--;
+        } else if (totalStakedTime >= poolTwoTime) {
             rewards = poolTwoReward(msg.sender);
             totalAmount = balance + rewards;
+            token.transfer(msg.sender, totalAmount);
+            totalFarmSupply -= rewards;
             totalStakeBalance -= balance;
-        } else {
+            isStaking[msg.sender] = false;
+            stakerCount--;
+        } else if (totalStakedTime >= poolTwoTime) {
             rewards = poolThirdReward(msg.sender);
             totalAmount = balance + rewards;
+            token.transfer(msg.sender, totalAmount);
+            totalFarmSupply -= rewards;
             totalStakeBalance -= balance;
-        }
-
-        if (0 < stakingBalanceOf[msg.sender]) {
-            isStaking[msg.sender] = true;
-        } else {
             isStaking[msg.sender] = false;
-            token.transfer(msg.sender, _amount);
-            totalStakeBalance -= amount;
+            stakerCount--;
         }
-
-        //stakingBalanceOf[msg.sender] += rewardOne;
 
         emit UnStake(msg.sender, _amount);
     }
@@ -120,7 +118,6 @@ contract BankSmartContract {
         uint256 userAllocation = (stakingBalanceOf[_user] /
             (totalStakeBalance)) * (percentage);
         uint256 rewardOne = (poolOneSupply * (userAllocation)) / (percentage);
-        //rewardOnePool[msg.sender] += rewardOne;
         uint256 totalReward = rewardOne;
         return totalReward;
     }
