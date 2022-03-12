@@ -7,11 +7,11 @@ import "./Token.sol";
 contract BankSmartContract {
     uint256 totalFarmSupply = 10000 * 1e18; // 10,000 in rewards - farm supply
     address public owner;
-    uint256 public time;
+    uint256 public lockPeriod;
     uint256 public totalStakeBalance;
     uint256 public amount;
 
-    uint256 private duration = 60 seconds;
+    uint256 private duration = 60 seconds; // No deposit/withdraw for 60 seconds after the staking.
     uint256 private poolOneTime = 86400 seconds; // lock period for pool one.
     uint256 private poolTwoTime = 172800 seconds; // lock period for pool two.
     uint256 private poolThirdTime = 259200 seconds; // lock period for pool three;
@@ -37,16 +37,25 @@ contract BankSmartContract {
     constructor(Token _token) {
         token = _token;
         owner = msg.sender;
-        time = block.timestamp;
+        lockPeriod = block.timestamp + duration;
     }
 
-    modifier checkBalance(uint256 _amount) {
+    modifier checkBalance(uint256 _amount, address _address) {
         require(_amount > 0, "amount should be bigger than 0");
+        require(_address != address(0), "Bank cannot deposit to pool");
         _;
     }
 
-    function stake(uint256 _amount) public payable checkBalance(_amount) {
-        require(msg.sender != address(0), "Bank cannot deposit to pool");
+    function stake(uint256 _amount)
+        public
+        payable
+        checkBalance(_amount, msg.sender)
+    {
+        //require(msg.sender != address(0), "Bank cannot deposit to pool");
+        require(
+            lockPeriod >= block.timestamp,
+            "No more deposit allowed for 60 seconds"
+        );
 
         //this can be used but wont be neccessary, uncomment if you wish to use. refer to line 35.
         /*if (isApproved[msg.sender] = false) {
@@ -70,7 +79,7 @@ contract BankSmartContract {
         emit Stake(msg.sender, _amount);
     }
 
-    function unStake(uint256 _amount) public payable {
+    function unStake() public payable {
         uint256 balance = stakingBalanceOf[msg.sender];
         require(isStaking[msg.sender] = true, "You wish");
         require(0 < balance, "No tokens to unstake");
@@ -87,6 +96,8 @@ contract BankSmartContract {
             totalStakeBalance -= balance;
             isStaking[msg.sender] = false;
             stakerCount--;
+
+            emit UnStake(msg.sender, totalAmount);
         } else if (totalStakedTime >= poolTwoTime) {
             rewards = poolTwoReward(msg.sender);
             totalAmount = balance + rewards;
@@ -95,6 +106,8 @@ contract BankSmartContract {
             totalStakeBalance -= balance;
             isStaking[msg.sender] = false;
             stakerCount--;
+
+            emit UnStake(msg.sender, totalAmount);
         } else if (totalStakedTime >= poolTwoTime) {
             rewards = poolThirdReward(msg.sender);
             totalAmount = balance + rewards;
@@ -103,13 +116,13 @@ contract BankSmartContract {
             totalStakeBalance -= balance;
             isStaking[msg.sender] = false;
             stakerCount--;
-        }
 
-        emit UnStake(msg.sender, _amount);
+            emit UnStake(msg.sender, totalAmount);
+        }
     }
 
     //internal view to public for testing
-    function poolOneReward(address _user) public returns (uint256) {
+    function poolOneReward(address _user) internal view returns (uint256) {
         //pool 1 - Time 1 day
         uint256 percentage = 100;
         uint256 poolWeight = 20;
@@ -122,7 +135,7 @@ contract BankSmartContract {
         return totalReward;
     }
 
-    function poolTwoReward(address _user) public returns (uint256) {
+    function poolTwoReward(address _user) internal view returns (uint256) {
         //pool 2 - Time 2 day
         uint256 previousReward = poolOneReward(_user);
         uint256 percentage = 100;
@@ -136,7 +149,7 @@ contract BankSmartContract {
         return totalReward;
     }
 
-    function poolThirdReward(address _user) public returns (uint256) {
+    function poolThirdReward(address _user) internal view returns (uint256) {
         //pool 3 - Time 3 day
         uint256 previousReward = poolTwoReward(_user);
         uint256 percentage = 100;
