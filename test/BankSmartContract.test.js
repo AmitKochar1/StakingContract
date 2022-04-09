@@ -11,6 +11,7 @@ require('chai')
 contract('Staking', ([deployer, investor, investor1, investor2]) => {
     const name = "Earth"
     const symbol = "ERTH"
+
     const decimals = '18'
     //const totalSupply = tokens(1000000).toString() 
     let nativeToken, staking
@@ -64,9 +65,9 @@ contract('Staking', ([deployer, investor, investor1, investor2]) => {
             result.toString().should.equal(tokens(5000).toString())
 
             // Investor 0 approving and Staking
-            await nativeToken.approve(staking.address, tokens(10000), { from: investor })
-            result = await nativeToken.approved(investor, staking.address, { from: investor })
-            console.log('Investor 0 has approved ' + result.toString())
+            /* await nativeToken.approve(staking.address, tokens(10000), { from: investor })
+             result = await nativeToken.approved(investor, staking.address, { from: investor })
+             console.log('Investor 0 has approved ' + result.toString())*/ // to uncomment again and push
             /*result = await nativeToken.isApproved(staking.address, { from: investor })
             console.log(result)*/
 
